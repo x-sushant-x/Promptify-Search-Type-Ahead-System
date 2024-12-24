@@ -1,13 +1,51 @@
 import { FaSearch } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSuggestions, addSuggestion } from '../api/suggestions'
 
 function SearchBox() {
     const [searchValue, setSearchValue] = useState("");
+    const [results, setResults] = useState<string[]>([]);
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
 
     const clearSearch = () => {
         setSearchValue("");
     };
+
+    // Debounce Logic
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchValue(searchValue)
+        }, 500)
+
+        return () => {
+            clearTimeout(handler)
+        };
+    }, [searchValue]);
+
+    // API Call on debounced value change
+    useEffect(() => {
+        if (debouncedSearchValue) {
+            fetchResults(debouncedSearchValue)
+        }
+    }, [debouncedSearchValue]);
+
+    const fetchResults = async (query: string) => {
+        try {
+            const result = await getSuggestions(query)
+            setResults(result || []);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    const addSearchQuery = async (query: string) => {
+        try {
+            addSuggestion(query)
+        } catch (error) {
+            console.error("Error adding query:", error);
+        }
+    }
 
     return (
         <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -21,6 +59,11 @@ function SearchBox() {
                         type="text"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                addSearchQuery(searchValue)
+                            }
+                        }}
                         placeholder="Search..."
                         className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -37,16 +80,21 @@ function SearchBox() {
                 {/* Dropdown List */}
                 <div className="mt-2 bg-white border border-gray-300 rounded-lg shadow-sm">
                     <ul className="text-sm text-gray-700">
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">macbook pro</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">
-                            macbook <span className="text-xs text-gray-500">(in Computers & Tablets)</span>
-                        </li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">
-                            macbook <span className="text-xs text-gray-500">(in Laptop Accessories)</span>
-                        </li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">macbook air</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">macbook pro 13</li>
-                        <li className="p-2 hover:bg-gray-100 cursor-pointer">macbook port</li>
+                        {results.length > 0 ? (
+                            results.map((result, index) => (
+                                <li
+                                    key={index}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                    onClick={() => {
+                                        setSearchValue(result)
+                                    }}
+                                >
+                                    {result}
+                                </li>
+                            ))
+                        ) : (
+                            <li className="px-4 py-2 text-gray-500">No results found</li>
+                        )}
                     </ul>
                 </div>
             </div>
