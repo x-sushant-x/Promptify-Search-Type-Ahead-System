@@ -1,5 +1,6 @@
 use super::trie::Trie;
 
+#[derive(Clone)]
 pub struct TrieQuerySVC {
     trie: Trie
 }

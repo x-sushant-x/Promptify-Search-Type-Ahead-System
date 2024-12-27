@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Default, Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub struct TrieNode {
     children: HashMap<char, TrieNode>,
     frequency: usize,
@@ -9,9 +9,9 @@ pub struct TrieNode {
 }
 
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Trie {
-    root: TrieNode
+    root: TrieNode,
 }
 
 impl Trie {
@@ -24,7 +24,7 @@ impl Trie {
 
         node.is_end_of_word = true;
         node.frequency = node.frequency + 1;
-        node.word = word.to_string()
+        node.word = word.to_string();
     }
 
     fn search_prefix(&self, prefix: &str) -> Option<&TrieNode> {

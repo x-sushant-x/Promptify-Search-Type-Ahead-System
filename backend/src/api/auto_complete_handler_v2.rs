@@ -1,13 +1,16 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use actix_web::{
-    get, post, web::{self, ServiceConfig}, HttpResponse, Responder
+    get, post,
+    web::{self, ServiceConfig},
+    HttpResponse, Responder,
 };
 
 use crate::{models::response_models, services};
 
-struct AutoCompleteHandlerV2 {
-    svc: Mutex<services::trie_query::TrieQuerySVC>,
+#[derive(Clone)]
+pub struct AutoCompleteHandlerV2 {
+    pub svc: Arc<Mutex<services::trie_query::TrieQuerySVC>>,
 }
 
 #[post("/query/{query}")]
@@ -23,13 +26,11 @@ async fn add_query(
     HttpResponse::Ok()
 }
 
-
 #[get("/suggestions/{query}")]
 async fn get_suggestions(
     query: web::Path<String>,
     handler: web::Data<AutoCompleteHandlerV2>,
 ) -> impl Responder {
-
     let query_string = query.into_inner();
     let svc = handler.svc.lock().unwrap();
 
@@ -41,13 +42,9 @@ async fn get_suggestions(
 }
 
 pub fn init_routes(cfg: &mut ServiceConfig) {
-    let svc = services::trie_query::TrieQuerySVC::new();
-
-    let handler = AutoCompleteHandlerV2 {
-        svc: Mutex::new(svc),
-    };
-
-    cfg.app_data(web::Data::new(handler));
-
-    cfg.service(web::scope("/api/v2").service(add_query).service(get_suggestions));
+    cfg.service(
+        web::scope("/api/v2")
+            .service(add_query)
+            .service(get_suggestions),
+    );
 }
