@@ -4,7 +4,7 @@ use std::collections::HashMap;
 pub struct TrieNode {
     children: HashMap<char, TrieNode>,
     frequency: usize,
-    word: String,
+    pub word: String,
     is_end_of_word: bool
 }
 
@@ -15,7 +15,7 @@ pub struct Trie {
 }
 
 impl Trie {
-    pub fn insert(&mut self, word: &str, frequency: usize) {
+    pub fn insert(&mut self, word: &str) {
         let mut node = &mut self.root;
 
         for ch in word.chars() {
@@ -23,8 +23,8 @@ impl Trie {
         }
 
         node.is_end_of_word = true;
-        node.frequency = frequency;
-        node.word = word.to_string();
+        node.frequency = node.frequency + 1;
+        node.word = word.to_string()
     }
 
     fn search_prefix(&self, prefix: &str) -> Option<&TrieNode> {

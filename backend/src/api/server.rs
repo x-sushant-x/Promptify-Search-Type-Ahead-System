@@ -1,7 +1,7 @@
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 
-use crate::api::auto_complete_handler;
+use crate::api::{auto_complete_handler, auto_complete_handler_v2};
 use crate::config::envconfig::Config;
 use crate::state::AppState;
 
@@ -13,6 +13,7 @@ pub async fn start_server(config: Config, state: AppState) -> std::io::Result<()
             .wrap(setup_cors())
             .app_data(web::Data::new(state.clone()))
             .configure(|cfg| auto_complete_handler::init_routes(cfg, state.pg_pool.clone()))
+            .configure(|cfg| auto_complete_handler_v2::init_routes(cfg))
     })
     .bind(("127.0.0.1", config.port))?
     .run()
