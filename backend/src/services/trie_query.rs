@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::time::Instant;
 
 use crate::models::response::suggestions::SuggestionResponse;
 
@@ -21,27 +21,20 @@ impl TrieQuerySVC {
     }
 
     pub fn get_suggestions(&self, prefix: String) -> SuggestionResponse {
-        let mut suggestions: SuggestionResponse = SuggestionResponse::default();
-
-        let then = SystemTime::now();
+        let now = Instant::now();
 
         let suggestions_nodes = self.trie.auto_complete(prefix.as_str());
+
+        let mut suggestions: SuggestionResponse = SuggestionResponse::default();
+        suggestions.suggestions.reserve(suggestions_nodes.len());
+
+        suggestions.total_results = suggestions_nodes.len();
         
         for node in suggestions_nodes {
-            suggestions.suggestions.push(node.word.clone());
-            suggestions.total_results = suggestions.total_results + 1;
+            suggestions.suggestions.push(node.word.to_owned());
         }
 
-        let now = SystemTime::now();
-
-        match now.duration_since(then) {
-            Ok(time) => {
-                suggestions.time_taken = time.as_millis();
-            },
-            Err(_) => {
-                suggestions.time_taken = 0;
-            }
-        }
+        suggestions.time_taken = now.elapsed().as_secs_f64() * 1000.0;
 
         suggestions
     }

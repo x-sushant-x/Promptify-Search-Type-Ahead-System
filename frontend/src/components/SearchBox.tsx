@@ -2,6 +2,7 @@ import { FaSearch } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 import { useState, useEffect } from "react";
 import { getSuggestions, addSuggestion } from '../api/suggestions'
+import { Bounce, ToastContainer, toast } from "react-toastify";
 
 function SearchBox() {
     const [searchValue, setSearchValue] = useState("");
@@ -33,8 +34,19 @@ function SearchBox() {
     const fetchResults = async (query: string) => {
         try {
             const result = await getSuggestions(query)
-            setResults(result || []);
-            
+            setResults(result.data.suggestions || []);
+
+            toast.success(`Fetched ${result.data.total_results} suggestions in ${result.data.time_taken} millis.`, {
+                position: "bottom-right",
+                autoClose: 1500,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                transition: Bounce,
+            });
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -100,7 +112,19 @@ function SearchBox() {
                 </div>
             </div>
 
-            <ToastContainer/>
+            <ToastContainer
+                position="bottom-right"
+                autoClose={1500}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </div>
     );
 }
