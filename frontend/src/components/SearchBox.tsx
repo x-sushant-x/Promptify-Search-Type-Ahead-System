@@ -34,6 +34,7 @@ function SearchBox() {
         try {
             const result = await getSuggestions(query)
             setResults(result || []);
+            
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -98,6 +99,8 @@ function SearchBox() {
                     </ul>
                 </div>
             </div>
+
+            <ToastContainer/>
         </div>
     );
 }
