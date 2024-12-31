@@ -41,10 +41,24 @@ async fn get_suggestions(
     HttpResponse::Ok().body(response)
 }
 
+#[get("/insert-sample-data")]
+async fn insert_sample_data(
+    handler: web::Data<AutoCompleteHandlerV2>,
+) -> impl Responder {
+
+    handler.svc.lock().unwrap().insert_sample_data();
+
+    let response = response_models::Success::new("Done");
+
+    HttpResponse::Ok().body(response)
+}
+
+
 pub fn init_routes(cfg: &mut ServiceConfig) {
     cfg.service(
         web::scope("/api/v2")
             .service(add_query)
-            .service(get_suggestions),
+            .service(get_suggestions)
+            .service(insert_sample_data),
     );
 }

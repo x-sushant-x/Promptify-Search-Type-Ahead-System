@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{fs::read_to_string, time::Instant};
 
 use crate::models::response::suggestions::SuggestionResponse;
 
@@ -37,5 +37,16 @@ impl TrieQuerySVC {
         suggestions.time_taken = now.elapsed().as_secs_f64() * 1000.0;
 
         suggestions
+    }
+
+    pub fn insert_sample_data(&mut self) {
+        for line in read_to_string("./datasets/trends.csv").unwrap().lines() {
+            let splited = line.split(",");
+            let collection = splited.collect::<Vec<&str>>();
+
+            let last = collection[collection.len() - 1];
+
+            self.trie.insert(last);
+        }
     }
 }
