@@ -10,14 +10,15 @@ function SearchBox() {
     const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
 
     const clearSearch = () => {
-        setSearchValue("");
+        setSearchValue("")
+        setResults([])
     };
 
     // Debounce Logic
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearchValue(searchValue)
-        }, 500)
+        }, 200)
 
         return () => {
             clearTimeout(handler)
@@ -91,7 +92,7 @@ function SearchBox() {
                 </div>
 
                 {/* Dropdown List */}
-                <div className="mt-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <div className="mt-2 bg-white border border-gray-300 rounded-lg shadow-sm max-h-48 overflow-y-auto">
                     <ul className="text-sm text-gray-700">
                         {results.length > 0 ? (
                             results.map((result, index) => (

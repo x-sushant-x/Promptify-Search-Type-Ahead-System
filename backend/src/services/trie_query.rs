@@ -48,5 +48,24 @@ impl TrieQuerySVC {
 
             self.trie.insert(last);
         }
+
+        for line in read_to_string("./datasets/movies.csv").unwrap().lines() {
+            let splited = line.split(",");
+            let collection = splited.collect::<Vec<&str>>();
+
+            let last = collection[1];
+
+            self.trie.insert(last);
+        }
+
+
+        for line in read_to_string("./datasets/ecommerce.csv").unwrap().lines() {
+            let splited = line.split(",");
+            let collection = splited.collect::<Vec<&str>>();
+
+            let last = collection[2];
+
+            self.trie.insert(last);
+        }
     }
 }
