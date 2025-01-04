@@ -1,4 +1,5 @@
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
@@ -25,6 +26,9 @@ pub async fn start_server(config: Config, state: AppState) -> std::io::Result<()
             .configure(|cfg| auto_complete_handler::init_routes(cfg, state.pg_pool.clone()))
             .configure(|cfg| auto_complete_handler_v2::init_routes(cfg))
     })
+    .keep_alive(Duration::from_secs(100))
+    .client_disconnect_timeout(Duration::from_secs(100))
+    .shutdown_timeout(100)
     .bind(("127.0.0.1", config.port))?
     .run()
     .await

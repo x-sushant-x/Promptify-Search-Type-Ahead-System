@@ -59,8 +59,8 @@ impl QueryRepo {
         Ok(())
     }
 
-    pub async fn get_top_5_suggestions(&self, query: String) -> Result<Vec<String>, sqlx::Error> {
-        let rows = sqlx::query("SELECT query FROM searched_queries WHERE query LIKE $1 ORDER BY frequency DESC LIMIT 5")
+    pub async fn get_suggestions(&self, query: String) -> Result<Vec<String>, sqlx::Error> {
+        let rows = sqlx::query("SELECT query FROM searched_queries WHERE query LIKE $1 ORDER BY frequency DESC")
         .bind(format!("{}%", query))
         .fetch_all(&*self.db)
         .await?;

@@ -41,6 +41,15 @@ async fn get_suggestions(
     HttpResponse::Ok().body(response)
 }
 
+#[get("/insert-sample-data-to-db")]
+async fn insert_sample_data_to_db(
+    handler: web::Data<AutoCompleteHandler>
+) -> impl Responder {
+    handler.svc.insert_sample_data_to_db().await;
+
+    HttpResponse::Ok().body("Queries added to database successsfully.")
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig, db: Arc<PgPool>) {
     let repo = repository::query::QueryRepo::new(db);
     let svc = services::query::QuerySVC::new(repo);
@@ -52,6 +61,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig, db: Arc<PgPool>) {
     cfg.service(
         web::scope("/api/v1")
             .service(add_query)
-            .service(get_suggestions),
+            .service(get_suggestions)
+            .service(insert_sample_data_to_db),
     );
 }
