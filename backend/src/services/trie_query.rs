@@ -67,5 +67,9 @@ impl TrieQuerySVC {
 
             self.trie.insert(last);
         }
+
+        for line in read_to_string("./datasets/yahoo.txt").unwrap().lines() {
+            self.trie.insert(line);
+        }
     }
 }

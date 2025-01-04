@@ -19,7 +19,7 @@ impl Trie {
         let mut node = &mut self.root;
 
         for ch in word.chars() {
-            node = node.children.entry(ch).or_insert_with(TrieNode::default)
+            node = node.children.entry(ch.to_ascii_lowercase()).or_insert_with(TrieNode::default)
         }
 
         node.is_end_of_word = true;
@@ -30,7 +30,7 @@ impl Trie {
     fn search_prefix(&self, prefix: &str) -> Option<&TrieNode> {
         let mut node = &self.root;
 
-        for ch in prefix.chars() {
+        for ch in prefix.chars().map(|c| c.to_ascii_lowercase()) {
             if let Some(next_node) = node.children.get(&ch) {
                 node = next_node;
             } else {
@@ -42,16 +42,16 @@ impl Trie {
     }
 
     pub fn auto_complete(&self, prefix: &str) -> Vec<&TrieNode> {
-        let mut suggestions_node = Vec::new();
+        let mut suggestions_nodes = Vec::new();
 
         if let Some(node) = self.search_prefix(prefix) {
-            node.collect_words(prefix.to_string(), &mut suggestions_node);
+            node.collect_words(prefix.to_string(), &mut suggestions_nodes);
         };
 
 
-        suggestions_node.sort_by(|a, b| b.frequency.cmp(&a.frequency));
+        suggestions_nodes.sort_by(|a, b| b.frequency.cmp(&a.frequency));
 
-        suggestions_node
+        suggestions_nodes
     }
 
     pub fn increase_frequency(&mut self, word: &str, incement_size: usize) {
