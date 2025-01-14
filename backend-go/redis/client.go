@@ -14,42 +14,60 @@ var (
 	ctx = context.Background()
 )
 
-func createNewRedisConnection(addr, password string) (*redis.Client, error) {
-	conn := redis.NewClient(&redis.Options{
+const (
+	REDIS_CLUSTER_USER_ENV = "REDIS_CLUSTER_USER"
+	REDIS_CLUSTER_PASS_ENV = "REDIS_CLUSTER_PASS"
+	REDIS_CLUSTER_URLS_ENV = "REDIS_CLUSTER_URLS"
+)
+
+func createNewRedisConnection(addr, password string) *redis.Client {
+	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 	})
 
-	result, err := conn.Ping(ctx).Result()
-	if err != nil || result == "" {
-		log.Fatal().Err(err).Msg("unable to connect to redis instance: " + addr)
-	}
+	ping(client)
 
-	return conn, nil
+	return client
 }
 
-/*
-This function require REDIS_CLUSTER_URLS to be set in enviroment config.
+func createRedisClusterConnection() *redis.ClusterClient {
+	addrs, user, pass := getRedisClusterCredentials()
 
-	REDIS_CLUSTER_URLS=IP:PORT,IP:PORT
-*/
-func createRedisClusterConnection() (*redis.ClusterClient, error) {
-	clusterURLs := os.Getenv("REDIS_CLUSTER_URLS")
+	client := redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:    addrs,
+		Username: user,
+		Password: pass,
+	})
+
+	ping(client)
+
+	return client
+}
+
+// Addrs, Username, Password
+func getRedisClusterCredentials() ([]string, string, string) {
+	clusterURLs := os.Getenv(REDIS_CLUSTER_URLS_ENV)
 
 	addrs := strings.Split(clusterURLs, ",")
 
 	if len(clusterURLs) == 0 {
-		log.Err(utils.ErrInvalidRedisClusterUrls).Msg("please check redis cluster urls")
+		log.Fatal().Err(utils.ErrInvalidRedisClusterUrls).Msg("please check redis cluster urls")
 	}
 
-	conn := redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: addrs,
-	})
+	user := os.Getenv(REDIS_CLUSTER_USER_ENV)
+	pass := os.Getenv(REDIS_CLUSTER_PASS_ENV)
 
-	result, err := conn.Ping(ctx).Result()
+	if user == "" || pass == "" {
+		log.Fatal().Err(utils.ErrNullRedisClusterCredentials).Msg("please specify REDIS_CLUSTER_USER and REDIS_CLUSTER_PASS in env")
+	}
+
+	return addrs, user, pass
+}
+
+func ping[C Pinger](client C) {
+	result, err := client.Ping(ctx).Result()
 	if err != nil || result == "" {
 		log.Fatal().Err(err).Msg("unable to connect to redis cluster")
 	}
-
-	return conn, nil
 }
