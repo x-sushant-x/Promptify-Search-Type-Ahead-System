@@ -20,7 +20,7 @@ const (
 	REDIS_CLUSTER_URLS_ENV = "REDIS_CLUSTER_URLS"
 )
 
-func createNewRedisConnection(addr, password string) *redis.Client {
+func CreateNewRedisConnection(addr, password string) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
@@ -31,7 +31,7 @@ func createNewRedisConnection(addr, password string) *redis.Client {
 	return client
 }
 
-func createRedisClusterConnection() *redis.ClusterClient {
+func ConnectToRedisCluster() *redis.ClusterClient {
 	addrs, user, pass := getRedisClusterCredentials()
 
 	client := redis.NewClusterClient(&redis.ClusterOptions{
@@ -49,11 +49,12 @@ func createRedisClusterConnection() *redis.ClusterClient {
 func getRedisClusterCredentials() ([]string, string, string) {
 	clusterURLs := os.Getenv(REDIS_CLUSTER_URLS_ENV)
 
-	addrs := strings.Split(clusterURLs, ",")
-
 	if len(clusterURLs) == 0 {
 		log.Fatal().Err(utils.ErrInvalidRedisClusterUrls).Msg("please check redis cluster urls")
 	}
+
+	addrs := strings.Split(clusterURLs, ",")
+	validateClusterAddrs(addrs)
 
 	user := os.Getenv(REDIS_CLUSTER_USER_ENV)
 	pass := os.Getenv(REDIS_CLUSTER_PASS_ENV)
@@ -63,6 +64,16 @@ func getRedisClusterCredentials() ([]string, string, string) {
 	}
 
 	return addrs, user, pass
+}
+
+func validateClusterAddrs(addrs []string) error {
+	for _, addr := range addrs {
+		if !strings.Contains(addr, ":") {
+			log.Fatal().Err(utils.ErrInvalidRedisClusterUrls).Msg("correct format for cluster address is IP:PORT")
+		}
+	}
+
+	return nil
 }
 
 func ping[C Pinger](client C) {

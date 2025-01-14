@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	redisClient "github.com/x-sushant-x/Promptify/backend/redis"
 )
 
 func init() {
@@ -23,4 +24,6 @@ func loadEnv() {
 	}
 }
 
-func main() {}
+func main() {
+	redisClient.ConnectToRedisCluster()
+}
